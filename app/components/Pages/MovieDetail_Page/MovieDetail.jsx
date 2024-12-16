@@ -1,4 +1,3 @@
-"use client";
 
 import React, { useEffect, useState } from "react";
 import { getMovieById } from "../../../service/movieService";
@@ -72,25 +71,27 @@ const MovieDetail = () => {
                 }}
             >
                 <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-                <div className="absolute inset-0 flex flex-col justify-end px-8 py-6 mt-8 mb-8 ml-12 text-white">
+                <div className="absolute inset-0 flex flex-col justify-end px-8 py-6 mt-8 mb-8 ml-12 text-white hidden md:flex">
                     <h1 className="text-2xl md:text-4xl font-bold">{movie.title}</h1>
                     <p className="text-sm md:text-lg mt-2">
-                        หมวดหมู่: {" "}
+                        หมวดหมู่:{" "}
                         <span className="font-medium">{movie.getGenreNames()}</span>
                         <span className="ml-4 mr-4">|</span>
-                        เรทคะแนน: {" "}
-                        <span className="font-medium">{movie.rating ? parseFloat(movie.rating).toFixed(1) : "ไม่ระบุ"}</span>
+                        เรทคะแนน:{" "}
+                        <span className="font-medium">
+                            {movie.rating ? parseFloat(movie.rating).toFixed(1) : "ไม่ระบุ"}
+                        </span>
                         <span className="ml-4 mr-4">|</span>
-                        วันที่เข้าฉาย : {" "}
-                        <span className="font-medium">{movie.release_date ? formatThaiDate(movie.release_date) : "ไม่ระบุ"}</span>
+                        วันที่เข้าฉาย:{" "}
+                        <span className="font-medium">
+                            {movie.release_date ? formatThaiDate(movie.release_date) : "ไม่ระบุ"}
+                        </span>
                     </p>
-
                 </div>
             </div>
 
-            <div className="max-w-6xl mx-auto mt-16 p-6 bg-white shadow-md rounded-lg">
+            <div className="max-w-6xl mx-auto mt-16 p-6 bg-white shadow-md rounded-lg hidden md:block">
                 <div className="flex flex-col md:flex-row mb-8">
-
                     <div className="w-full md:w-1/3 mt-8 md:mb-0 flex justify-center">
                         <img
                             src={movie.getPosterUrl()}
@@ -130,8 +131,57 @@ const MovieDetail = () => {
                 </div>
             </div>
 
-            <div className="mt-12 p-6"></div>
+            <div className="block md:hidden p-6">
+                <div className="flex flex-col md:flex-row mb-8">
+                    <div className="flex flex-row ">
+                        <div className="w-1/3 sm:w-1/3 md:w-1/3 md:mb-0 -mt-28 z-10">
+                            <img
+                                src={movie.getPosterUrl()}
+                                alt={movie.title}
+                                className="w-full max-w-[250px] h-auto"
+                            />
+
+                        </div>
+
+                        <div className="flex-col ml-10 mb-18">
+                            <h1 className="text-lg md:text-2xl font-bold">{movie.title}</h1>
+                            <p className="text-sm md:text-base text-gray-500 mt-2">
+                                วันที่ฉาย: {movie.release_date ? formatThaiDate(movie.release_date) : "ไม่ระบุ"}
+                            </p>
+                            <p className="text-sm md:text-base text-gray-500 mt-2">
+                                หมวดหมู่: {movie.getGenreNames()}
+                            </p>
+                            <p className="text-sm md:text-base text-gray-500 mt-2">
+                                เรทคะแนน: {movie.rating ? parseFloat(movie.rating).toFixed(1) : "ไม่ระบุ"}
+                            </p>
+
+                            <div className="flex space-x-2 mt-4">
+                                <button className="p-2 bg-blue-500 text-white rounded-full shadow hover:bg-blue-600">
+                                    <i className="fas fa-list"></i>
+                                </button>
+                                <button className="p-2 bg-red-500 text-white rounded-full shadow hover:bg-red-600">
+                                    <i className="fas fa-heart"></i>
+                                </button>
+                                <button className="p-2 bg-yellow-500 text-white rounded-full shadow hover:bg-yellow-600">
+                                    <i className="fas fa-bookmark"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="md:w-2/3 md:ml-12">
+                        <div className="mt-4">
+                            <h3 className="text-base md:text-lg font-bold">Overview</h3>
+                            <p className="text-sm md:text-base mt-4 text-gray-700 text-justify">
+                                {movie.overview || "ยังไม่มีข้อมูลในระบบ"}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className="mt-16 p-6"></div>
         </div>
+
     );
 };
 
