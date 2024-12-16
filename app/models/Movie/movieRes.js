@@ -1,5 +1,5 @@
 export class movieRes {
-    constructor(idmovie, title, overview, release_date, poster_path, background_path, rating, genres) {
+    constructor(idmovie, title, overview, release_date, poster_path, background_path, rating, genres,) {
         this.idmovie = idmovie;
         this.title = title;
         this.overview = overview;

@@ -1,32 +1,47 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAllMovies } from "../../../service/movieService";
+import { getMoviesAll } from "../../../service/movieService";
 import { Link } from "react-router";
-import {
-    faStar
-} from "@fortawesome/free-solid-svg-icons";
+import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const Home = () => {
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
+
+    const fetchMovies = async (page) => {
+        try {
+            setLoading(true);
+            const data = await getMoviesAll(page);
+            setMovies(data.content || []);
+            setTotalPages(data.totalPages || 1);
+            setLoading(false);
+        } catch (error) {
+            setError("Failed to fetch movies");
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchMovies = async () => {
-            try {
-                const data = await getAllMovies();
-                setMovies(data);
-                setLoading(false);
-            } catch (error) {
-                setError("Failed to fetch movies");
-                setLoading(false);
-            }
-        };
+        fetchMovies(currentPage);
+    }, [currentPage]);
 
-        fetchMovies();
-    }, []);
+    const loadNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const loadPreviousPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
 
     if (loading) {
         return (
@@ -45,9 +60,8 @@ const Home = () => {
     return (
         <div className="container mx-auto p-4">
             <h2 className="text-2xl md:text-3xl text-purple-600 font-bold ml-14 mb-8 mt-10 relative">
-                        <span className="mr-4">|</span>
-                        ภาพยนต์ทั้งหมด
-                    </h2>
+                <span className="mr-4">|</span> ภาพยนต์ทั้งหมด
+            </h2>
             <div className="w-full flex justify-center mb-10">
                 <hr className="border-t-2 text-teal-500 w-11/12" />
             </div>
@@ -78,6 +92,45 @@ const Home = () => {
                         </div>
                     </Link>
                 ))}
+            </div>
+
+            <div className="flex items-center justify-between mt-10 flex-wrap gap-4">
+                <button
+                    onClick={loadPreviousPage}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 disabled:opacity-50 transition-all w-full sm:w-auto"
+                >
+                    หน้าก่อนหน้า
+                </button>
+
+                <div className="flex items-center space-x-2 sm:space-x-4">
+                    <p className="text-lg font-semibold text-gray-700">
+                        หน้า
+                    </p>
+                    {Array.from({ length: totalPages }, (_, index) => (
+                        <button
+                            key={index + 1}
+                            onClick={() => setCurrentPage(index + 1)}
+                            className={`px-3 py-1 text-sm font-semibold rounded-md ${currentPage === index + 1
+                                    ? "bg-blue-500 text-white"
+                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                }`}
+                        >
+                            {index + 1}
+                        </button>
+                    ))}
+                    <p className="text-lg font-semibold text-gray-700">
+                        จาก {totalPages}
+                    </p>
+                </div>
+
+                <button
+                    onClick={loadNextPage}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 transition-all w-full sm:w-auto"
+                >
+                    หน้าถัดไป
+                </button>
             </div>
 
         </div>

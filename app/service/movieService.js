@@ -3,6 +3,38 @@ import axios from "axios";
 
 const API_BASE_URL = "http://localhost:8080/api";
 
+export const getMoviesAll = async (page = 1, size = 10) => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/movies`, {
+            params: {
+                page, 
+                size,    
+            },
+        });
+
+        if (response.data && Array.isArray(response.data.content)) {
+            return {
+                content: response.data.content.map((movie) => new movieRes(
+                    movie.idmovie,
+                    movie.title,
+                    movie.overview,
+                    movie.release_date,
+                    movie.poster_path,
+                    movie.background_path,
+                    movie.rating,
+                    movie.genres,
+                )),
+                totalPages: response.data.totalPages  
+            };
+        }
+
+        throw new Error('Invalid response structure');
+    } catch (error) {
+        console.error("Error fetching movies:", error);
+        throw error;
+    }
+};
+
 export const getAllMovies = async () => {
     try {
         const response = await axios.get(`${API_BASE_URL}/movies`)
