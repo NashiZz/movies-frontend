@@ -9,6 +9,7 @@ import {
   faBars,
   faTimes,
   faChevronDown,
+  faChevronUp,
   faUser,
   faSearch,
 } from "@fortawesome/free-solid-svg-icons";
@@ -26,6 +27,7 @@ function Header() {
   const [genres, setGenres] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [dropdownIcon, setDropdownIcon] = useState(faChevronDown);
 
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
@@ -141,9 +143,23 @@ function Header() {
     }
   }, 500);
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    handleResize();
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <>
-      <header
+      {/* <header
         className={`bg-header shadow-md sticky top-0 z-50 transition-all duration-300 ${isScrolled ? "py-1" : "py-2"
           }`}
       >
@@ -169,8 +185,9 @@ function Header() {
                 </h5>
               )}
             </div>
+          </div>
 
-            <button
+          <button
               className="md:hidden text-gray-700 hover:text-white"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
@@ -179,7 +196,6 @@ function Header() {
                 className="h-6 w-6 text-indigo-400 flex items-end"
               />
             </button>
-          </div>
 
           <nav
             className={`md:flex ${isScrolled ? "md:space-x-4" : "md:space-x-6"
@@ -270,10 +286,223 @@ function Header() {
             </button>
           </div>
         </div>
+      </header> */}
+
+      <header
+        className={`bg-header shadow-md sticky top-0 z-50 transition-all duration-300 ${isScrolled ? "py-1" : "py-2"
+          }`}
+      >
+        <div className="container mx-auto px-4 flex items-center justify-between relative">
+          <div className="flex items-center">
+            <img
+              src="/MOVIE.png"
+              alt="Logo"
+              className={`mr-3 transition-all duration-300 my-3 ${isScrolled ? "h-8 md:h-10" : "h-12 md:h-16"
+                } object-contain`}
+              style={{ maxWidth: "250px" }}
+            />
+            <div className="block">
+              <h1 className="text-gray-700 text-xl md:text-2xl font-bold transition-opacity duration-300">
+                TMDB
+              </h1>
+              {!isScrolled && (
+                <h5 className="text-gray-700 text-xs md:text-lg mb-1">MOVIE</h5>
+              )}
+            </div>
+          </div>
+
+          <button
+            className="text-gray-700 hover:text-indigo-500 flex items-center space-x-2 md:hidden"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            <FontAwesomeIcon
+              icon={isMobileMenuOpen ? faTimes : faBars}
+              className="h-6 w-6 text-indigo-400"
+            />
+          </button>
+
+          <nav
+            className={`hidden md:flex space-x-6 ${isScrolled ? "md:space-x-4" : "md:space-x-6"
+              }`}
+          >
+            <Link to="/" className="block text-indigo-400 hover:text-gray-700 py-2">
+              หน้าแรก
+            </Link>
+            <Link
+              to="/movies/movieall"
+              className="block text-indigo-400 hover:text-gray-700 py-2"
+            >
+              ภาพยนต์
+            </Link>
+
+            <div className="relative">
+              <button
+                onClick={() => setDropdownOpen((prev) => (prev === "genres" ? "" : "genres"))}
+                className="block text-indigo-400 hover:text-gray-700 py-2"
+              >
+                หมวดหมู่ <FontAwesomeIcon icon={faChevronDown} />
+              </button>
+
+              {dropdownOpen === "genres" && (
+                <div
+                  className="absolute bg-white shadow-lg rounded-md mt-2 z-10 w-full md:w-96 max-h-96 overflow-y-auto left-1/2 transform -translate-x-1/2"
+                >
+                  {loading ? (
+                    <div className="px-4 py-2 text-gray-500">กำลังโหลด...</div>
+                  ) : error ? (
+                    <div className="px-4 py-2 text-red-500">{error}</div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+                      {genres
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                        .map((genre) => (
+                          <Link
+                            key={genre.name}
+                            to={`/movies/genres/${genre.name}`}
+                            className="block text-gray-700 hover:bg-gray-100 p-2 rounded-md text-center"
+                            onClick={() => setDropdownOpen("")}
+                          >
+                            {genre.name}
+                          </Link>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </nav>
+          <div className="hidden md:flex items-center space-x-4 w-full md:w-auto">
+            <div className="hidden md:flex items-center space-x-4 w-full md:w-auto">
+              {isSearchActive ? (
+                <form onSubmit={handleSearchSubmit} className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    value={searchText}
+                    onChange={handleSearchChange}
+                    placeholder="พิมพ์ข้อความที่จะค้นหา..."
+                    className="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring focus:ring-indigo-300"
+                  />
+                  <button
+                    type="submit"
+                    className="text-white bg-indigo-500 hover:bg-indigo-600 px-3 py-1 rounded-md"
+                  >
+                    ค้นหา
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSearchToggle}
+                    className="text-gray-500 hover:text-red-500"
+                  >
+                    <FontAwesomeIcon icon={faTimes} className="h-5 w-5" />
+                  </button>
+                </form>
+              ) : (
+                <button
+                  onClick={handleSearchToggle}
+                  className="text-indigo-400 hover:text-gray-700 py-2"
+                >
+                  <FontAwesomeIcon icon={faSearch} className="h-6 w-6" />
+                </button>
+              )}
+            </div>
+            {/* <button
+              onClick={handleModalOpen}
+              className="hidden md:block text-indigo-400 hover:text-gray-700 py-2"
+            >
+              <FontAwesomeIcon icon={faUser} className="h-6 w-6" />
+            </button> */}
+          </div>
+        </div>
+
+        <div>
+          {isMobileMenuOpen && (
+            <div
+              className="fixed inset-0 bg-black bg-opacity-50 z-40"
+              onClick={() => setIsMobileMenuOpen(false)}
+            ></div>
+          )}
+
+          <div
+            className={`fixed top-0 right-0 h-full bg-white shadow-lg z-50 transform transition-transform duration-300 ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+              }`}
+            style={{ width: "250px" }}
+          >
+            <button
+              className="absolute top-4 right-4 text-white"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <FontAwesomeIcon icon={faTimes} className="h-6 w-6" />
+            </button>
+            <div className="p-4 flex flex-col h-full bg-purple-600">
+              <h2 className="text-lg text-white font-bold mb-4">TMDB MOVIE</h2>
+              <div className="w-full flex justify-center mb-6">
+                <hr className="border-t-1 text-white w-full" />
+              </div>
+              <ul className="space-y-4 p-4 flex-grow">
+                <li>
+                  <Link to="/" className="text-sm text-bold block text-white hover:text-gray-300" onClick={() => setIsMobileMenuOpen(false)}>
+                    หน้าแรก
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/movies/movieall" className="text-sm block text-white hover:text-gray-300" onClick={() => setIsMobileMenuOpen(false)}>
+                    ภาพยนต์
+                  </Link>
+                </li>
+                <li>
+                  <div className="relative">
+                    <button
+                      onClick={() => {
+                        setDropdownOpen((prev) => (prev === "genres" ? "" : "genres"));
+                        setDropdownIcon((prev) => (prev === faChevronDown ? faChevronUp : faChevronDown));
+                      }}
+                      className="text-sm block text-white hover:text-gray-300 py-2"
+                    >
+                      หมวดหมู่ <FontAwesomeIcon icon={dropdownIcon} />
+                    </button>
+                    {dropdownOpen === "genres" && (
+                      <ul className="bg-white shadow-lg rounded-md mt-2 z-10 w-full max-h-96 overflow-y-auto p-2 space-y-1 border border-gray-200">
+                        {loading ? (
+                          <li className="px-4 py-2 text-gray-500">กำลังโหลด...</li>
+                        ) : error ? (
+                          <li className="px-4 py-2 text-red-500">{error}</li>
+                        ) : (
+                          genres
+                            .sort((a, b) => a.name.localeCompare(b.name))
+                            .map((genre) => (
+                              <li key={genre.name} className="w-full">
+                                <Link
+                                  to={`/movies/genres/${genre.name}`}
+                                  className="block text-gray-700 hover:bg-gray-100 p-2 rounded-md"
+                                  onClick={() => {
+                                    setDropdownOpen("");
+                                    setDropdownIcon(faChevronDown);
+                                    setIsMobileMenuOpen(false);
+                                  }}
+                                >
+                                  {genre.name}
+                                </Link>
+                              </li>
+                            ))
+                        )}
+                      </ul>
+                    )}
+                  </div>
+                </li>
+              </ul>
+              <button
+                onClick={handleModalOpen}
+                className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white font-semibold hover:shadow-xl hover:brightness-110 focus:outline-none focus:ring-4 focus:ring-purple-300 focus:ring-opacity-50 rounded-full py-3 px-8 transition duration-300 ease-in-out transform hover:scale-105 shadow-md"
+              >
+                เข้าสู่ระบบ
+              </button>
+            </div>
+          </div>
+        </div>
       </header>
 
       {isSearchActive && movies.length > 0 && (
-        <div className="absolute bg-white shadow-lg rounded-md mt-2 right-44 ml-8 w-full md:w-72 max-h-100 overflow-y-auto z-30">
+        <div className="absolute bg-white shadow-lg rounded-md mt-2 right-44 ml-8 w-full md:w-72 max-h-100 overflow-y-auto z-60">
           <div className="p-4">
             {movies.map((movie) => (
               <Link
