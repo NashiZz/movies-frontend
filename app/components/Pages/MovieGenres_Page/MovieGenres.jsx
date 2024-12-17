@@ -1,7 +1,6 @@
-"use client";
 
-import { useEffect, useState } from "react";
-import { getMoviesByGenre } from "../../../service/movieService";
+import { useState, useEffect } from "react";
+import { getMoviesAllGenre, getMoviesByGenre } from "../../../service/movieService";
 import { Link, useParams } from "react-router-dom";
 import {
     faStar
@@ -11,28 +10,44 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 const MovieGenres = () => {
     const { genreName } = useParams();
     const [movies, setMovies] = useState([]);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetchMovies = async () => {
-            try {
-                const data = await getMoviesByGenre(genreName);
-                setMovies(data);
-                setLoading(false);
-            } catch (err) {
-                setError(err.message);
-                setLoading(false);
-            }
-        };
+    const fetchMovies = async (page) => {
+        try {
+            setLoading(true);
+            const data = await getMoviesAllGenre(genreName, page, 20);
+            setMovies(data.content);
+            setTotalPages(data.totalPages);
+            setLoading(false);
+        } catch (err) {
+            setError(err.message);
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         if (genreName) {
-            fetchMovies();
+            fetchMovies(currentPage);
         } else {
             setLoading(false);
             setError("ไม่มีหมวดหมู่ที่เลือก");
         }
-    }, [genreName]);
+    }, [genreName, currentPage]);
+
+    const loadNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const loadPreviousPage = () => {
+        if (currentPage > 0) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
 
     if (loading) {
         return (
@@ -59,36 +74,74 @@ const MovieGenres = () => {
                     <div className="relative w-full h-96 flex mb-8 mt-10 ml-14">
                         <p className="text-gray-500 ">ไม่มีภาพยนต์ในหมวดหมู่นี้</p>
                     </div>
-
                 ) : (
-                    <div className="grid grid-cols-1 mb-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-10 mx-20 justify-items-center">
-                        {movies.map((movie) => (
-                            <Link to={`/movies/${movie.title}/${movie.idmovie}`} key={movie.idmovie}>
-                                <div className="bg-white shadow-md rounded-lg overflow-hidden transform hover:scale-105 transition-transform duration-300 w-[200px] h-[480px] flex flex-col">
-                                    <div className="w-full">
-                                        <img
-                                            src={movie.getPosterUrl()}
-                                            alt={movie.title}
-                                            className="max-w-full max-h-full object-contain"
-                                        />
+                    <>
+                        <div className="grid grid-cols-1 mb-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-10 mx-20 justify-items-center">
+                            {movies.map((movie) => (
+                                <Link to={`/movies/${movie.title}/${movie.idmovie}`} key={movie.idmovie}>
+                                    <div className="bg-white shadow-md rounded-lg overflow-hidden transform hover:scale-105 transition-transform duration-300 w-[200px] h-[480px] flex flex-col">
+                                        <div className="w-full">
+                                            <img
+                                                src={movie.getPosterUrl()}
+                                                alt={movie.title}
+                                                className="max-w-full max-h-full object-contain"
+                                            />
+                                        </div>
+                                        <div className="p-4 mb-2 text-left flex-1 flex flex-col justify-between">
+                                            <p className="text-lg text-gray-600 flex items-center">
+                                                <FontAwesomeIcon icon={faStar} className="h-4 w-4 text-yellow-400 mr-1" />
+                                                {movie.rating ? parseFloat(movie.rating).toFixed(1) : "ไม่ระบุ"}
+                                            </p>
+                                            <h2 className="text-lg font-semibold line-clamp-2">
+                                                {movie.title}
+                                            </h2>
+                                            <p className="text-sm text-blue-500 mb-2 mt-4">
+                                                วันที่ฉาย: {movie.release_date}
+                                            </p>
+                                        </div>
                                     </div>
+                                </Link>
+                            ))}
+                        </div>
+                        <div className="flex items-center justify-between mt-10 flex-wrap gap-4">
+                            <button
+                                onClick={loadPreviousPage}
+                                disabled={currentPage === 0}
+                                className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 disabled:opacity-50 transition-all w-full sm:w-auto"
+                            >
+                                หน้าก่อนหน้า
+                            </button>
 
-                                    <div className="p-4 mb-2 text-left flex-1 flex flex-col justify-between">
-                                        <p className="text-lg text-gray-600 flex items-center">
-                                            <FontAwesomeIcon icon={faStar} className="h-4 w-4 text-yellow-400 mr-1" />
-                                            {movie.rating ? parseFloat(movie.rating).toFixed(1) : "ไม่ระบุ"}
-                                        </p>
-                                        <h2 className="text-lg font-semibold line-clamp-2">
-                                            {movie.title}
-                                        </h2>
-                                        <p className="text-sm text-blue-500 mb-2 mt-4">
-                                            วันที่ฉาย: {movie.release_date}
-                                        </p>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
+                            <div className="flex items-center space-x-2 sm:space-x-4">
+                                <p className="text-lg font-semibold text-gray-700">
+                                    หน้า
+                                </p>
+                                {Array.from({ length: totalPages }, (_, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => setCurrentPage(index)}
+                                        className={`px-3 py-1 text-sm font-semibold rounded-md ${currentPage === index
+                                            ? "bg-blue-500 text-white"
+                                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                            }`}
+                                    >
+                                        {index + 1}
+                                    </button>
+                                ))}
+                                <p className="text-lg font-semibold text-gray-700">
+                                    จาก {totalPages}
+                                </p>
+                            </div>
+
+                            <button
+                                onClick={loadNextPage}
+                                disabled={currentPage === totalPages - 1}
+                                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 transition-all w-full sm:w-auto"
+                            >
+                                หน้าถัดไป
+                            </button>
+                        </div>
+                    </>
                 )}
             </div>
         </div>

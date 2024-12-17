@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import throttle from "lodash/throttle";
 import debounce from 'lodash.debounce';
 
@@ -40,6 +40,8 @@ function Header() {
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
+
+  const navigate = useNavigate();
 
   const handleModalOpen = () => {
     setShowLoginModal(true);
@@ -112,6 +114,8 @@ function Header() {
           pageSize: 10,
         });
         setMovies(result?.content || []);
+
+        navigate(`/search/${searchText}`);
       } catch (error) {
         console.error("Search Failed", error);
         setMovies([]);
@@ -159,135 +163,6 @@ function Header() {
 
   return (
     <>
-      {/* <header
-        className={`bg-header shadow-md sticky top-0 z-50 transition-all duration-300 ${isScrolled ? "py-1" : "py-2"
-          }`}
-      >
-        <div className="container mx-auto px-4 flex flex-wrap items-center justify-between relative">
-          <div
-            className="flex items-center w-full md:w-auto justify-center md:justify-start"
-          >
-            <img
-              src="/MOVIE.png"
-              alt="Logo"
-              className={`mr-3 transition-all duration-300 my-3 ${isScrolled ? "h-8 md:h-10" : "h-12 md:h-16"
-                } object-contain`}
-              style={{ maxWidth: "250px" }}
-            />
-
-            <div className="block text-center md:text-left">
-              <h1 className="text-gray-700 text-xl md:text-2xl font-bold transition-opacity duration-300">
-                TMDB
-              </h1>
-              {!isScrolled && (
-                <h5 className="text-gray-700 text-xs md:text-lg mb-1">
-                  MOVIE
-                </h5>
-              )}
-            </div>
-          </div>
-
-          <button
-              className="md:hidden text-gray-700 hover:text-white"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              <FontAwesomeIcon
-                icon={isMobileMenuOpen ? faTimes : faBars}
-                className="h-6 w-6 text-indigo-400 flex items-end"
-              />
-            </button>
-
-          <nav
-            className={`md:flex ${isScrolled ? "md:space-x-4" : "md:space-x-6"
-              } ${isMobileMenuOpen ? "block" : "hidden"} w-full md:w-auto`}
-          >
-            <Link to="/" className="block text-indigo-400 hover:text-gray-700 py-2">
-              หน้าแรก
-            </Link>
-            <Link
-              to="/movies/movieall"
-              className="block text-indigo-400 hover:text-gray-700 py-2"
-            >
-              ภาพยนต์
-            </Link>
-
-            <div className="relative">
-              <button
-                onClick={() => setDropdownOpen((prev) => (prev === "genres" ? "" : "genres"))}
-                className="block text-indigo-400 hover:text-gray-700 py-2"
-              >
-                หมวดหมู่ <FontAwesomeIcon icon={faChevronDown} />
-              </button>
-              {dropdownOpen === "genres" && (
-                <div className="absolute bg-white shadow-lg rounded-md mt-2 z-10 w-72 md:w-96 max-h-96 overflow-y-auto">
-                  {loading ? (
-                    <div className="px-4 py-2 text-gray-500">กำลังโหลด...</div>
-                  ) : error ? (
-                    <div className="px-4 py-2 text-red-500">{error}</div>
-                  ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4">
-                      {genres
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .map((genre) => (
-                          <Link
-                            key={genre.name}
-                            to={`/movies/genres/${genre.name}`}
-                            className="block text-gray-700 hover:bg-gray-100 p-2 rounded-md text-center"
-                          >
-                            {genre.name}
-                          </Link>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </nav>
-
-          <div className="flex items-center space-x-4 w-full md:w-auto">
-            <div className="flex items-center space-x-4 w-full md:w-auto">
-              {isSearchActive ? (
-                <form onSubmit={handleSearchSubmit} className="flex items-center space-x-2">
-                  <input
-                    type="text"
-                    value={searchText}
-                    onChange={handleSearchChange}
-                    placeholder="พิมพ์ข้อความที่จะค้นหา..."
-                    className="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring focus:ring-indigo-300"
-                  />
-                  <button
-                    type="submit"
-                    className="text-white bg-indigo-500 hover:bg-indigo-600 px-3 py-1 rounded-md"
-                  >
-                    ค้นหา
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSearchToggle}
-                    className="text-gray-500 hover:text-red-500"
-                  >
-                    <FontAwesomeIcon icon={faTimes} className="h-5 w-5" />
-                  </button>
-                </form>
-              ) : (
-                <button
-                  onClick={handleSearchToggle}
-                  className="text-indigo-400 hover:text-gray-700 py-2"
-                >
-                  <FontAwesomeIcon icon={faSearch} className="h-6 w-6" />
-                </button>
-              )}
-            </div>
-            <button
-              onClick={handleModalOpen}
-              className="text-indigo-400 hover:text-gray-700 py-2"
-            >
-              <FontAwesomeIcon icon={faUser} className="h-6 w-6" />
-            </button>
-          </div>
-        </div>
-      </header> */}
-
       <header
         className={`bg-header shadow-md sticky top-0 z-50 transition-all duration-300 ${isScrolled ? "py-1" : "py-2"
           }`}
@@ -345,7 +220,7 @@ function Header() {
 
               {dropdownOpen === "genres" && (
                 <div
-                  className="absolute bg-white shadow-lg rounded-md mt-2 z-10 w-full md:w-96 max-h-96 overflow-y-auto left-1/2 transform -translate-x-1/2"
+                  className="absolute bg-white shadow-lg rounded-md mt-2 z-10 w-full md:w-96 max-h-96 border border-gray-200 overflow-y-auto left-1/2 transform -translate-x-1/2"
                 >
                   {loading ? (
                     <div className="px-4 py-2 text-gray-500">กำลังโหลด...</div>
@@ -375,23 +250,10 @@ function Header() {
             <div className="hidden md:flex items-center space-x-4 w-full md:w-auto">
               {isSearchActive ? (
                 <form onSubmit={handleSearchSubmit} className="flex items-center space-x-2">
-                  <input
-                    type="text"
-                    value={searchText}
-                    onChange={handleSearchChange}
-                    placeholder="พิมพ์ข้อความที่จะค้นหา..."
-                    className="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring focus:ring-indigo-300"
-                  />
-                  <button
-                    type="submit"
-                    className="text-white bg-indigo-500 hover:bg-indigo-600 px-3 py-1 rounded-md"
-                  >
-                    ค้นหา
-                  </button>
                   <button
                     type="button"
                     onClick={handleSearchToggle}
-                    className="text-gray-500 hover:text-red-500"
+                    className="text-gray-500 hover:text-indigo-400"
                   >
                     <FontAwesomeIcon icon={faTimes} className="h-5 w-5" />
                   </button>
@@ -501,25 +363,42 @@ function Header() {
         </div>
       </header>
 
-      {isSearchActive && movies.length > 0 && (
-        <div className="absolute bg-white shadow-lg rounded-md mt-2 right-44 ml-8 w-full md:w-72 max-h-100 overflow-y-auto z-60">
-          <div className="p-4">
-            {movies.map((movie) => (
-              <Link
-                key={movie.idmovie}
-                to={`/movies/${movie.title}/${movie.idmovie}`}
-                className="block text-gray-700 hover:bg-gray-100 p-2 rounded-md text-center"
-              >
-                {movie.title}
-              </Link>
-            ))}
+      {isSearchActive && (
+        <div
+          className="absolute left-0 right-0 mx-auto bg-white shadow-lg rounded-md container max-w-screen-lg w-full mt-2 p-4 z-20"
+        >
+          <div className="flex flex-row mb-4">
+            <FontAwesomeIcon icon={faSearch} className="h-4 w-4 py-3 mr-2 ml-2" />
+            <input
+              type="text"
+              value={searchText}
+              onChange={handleSearchChange}
+              onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit(e)}
+              placeholder="พิมพ์ข้อความที่จะค้นหา..."
+              className="w-full border-none rounded-md px-3 py-2 focus:outline-none"
+            />
           </div>
-        </div>
-      )}
 
-      {isSearchActive && movies.length === 0 && (
-        <div className="absolute bg-white shadow-lg rounded-md mt-2 right-44 ml-8 w-full md:w-72 max-h-60 overflow-y-auto z-10">
-          <div className="p-4 text-gray-500">ไม่พบผลลัพธ์ที่ตรงกับคำค้นหา</div>
+          <div className="ml-6">
+            {loadingMovies ? (
+              <div className="text-gray-500">กำลังโหลด...</div>
+            ) : movies.length > 0 ? (
+              movies.map((movie) => (
+                <Link
+                  key={movie.idmovie}
+                  to={`/movies/${movie.title}/${movie.idmovie}`}
+                  className="block text-gray-700 hover:bg-gray-100 p-2 rounded-md"
+                >
+                  <FontAwesomeIcon icon={faSearch} className="h-3 w-3 mr-2 ml-2" />
+                  {movie.title}
+                </Link>
+              ))
+            ) : (
+              <div className="text-gray-500 mt-2 ml-2">
+                ไม่พบผลลัพธ์ที่ตรงกับคำค้นหา
+              </div>
+            )}
+          </div>
         </div>
       )}
 

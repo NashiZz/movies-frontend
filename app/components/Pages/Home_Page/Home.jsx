@@ -1,4 +1,3 @@
-"use client";
 
 import { useState, useEffect } from "react";
 import { getMoviesAll } from "../../../service/movieService";
@@ -10,9 +9,8 @@ const Home = () => {
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
 
     const fetchMovies = async (page) => {
         try {
@@ -38,7 +36,7 @@ const Home = () => {
     };
 
     const loadPreviousPage = () => {
-        if (currentPage > 1) {
+        if (currentPage > 0) {
             setCurrentPage(currentPage - 1);
         }
     };
@@ -97,7 +95,7 @@ const Home = () => {
             <div className="flex items-center justify-between mt-10 flex-wrap gap-4">
                 <button
                     onClick={loadPreviousPage}
-                    disabled={currentPage === 1}
+                    disabled={currentPage === 0}
                     className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 disabled:opacity-50 transition-all w-full sm:w-auto"
                 >
                     หน้าก่อนหน้า
@@ -109,9 +107,9 @@ const Home = () => {
                     </p>
                     {Array.from({ length: totalPages }, (_, index) => (
                         <button
-                            key={index + 1}
-                            onClick={() => setCurrentPage(index + 1)}
-                            className={`px-3 py-1 text-sm font-semibold rounded-md ${currentPage === index + 1
+                            key={index}
+                            onClick={() => setCurrentPage(index)}
+                            className={`px-3 py-1 text-sm font-semibold rounded-md ${currentPage === index
                                     ? "bg-blue-500 text-white"
                                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                 }`}
@@ -126,7 +124,7 @@ const Home = () => {
 
                 <button
                     onClick={loadNextPage}
-                    disabled={currentPage === totalPages}
+                    disabled={currentPage === totalPages - 1}
                     className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 transition-all w-full sm:w-auto"
                 >
                     หน้าถัดไป

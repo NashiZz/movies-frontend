@@ -50,11 +50,35 @@ body {
   font-weight: bold;
 }
 
+.movie-container {
+  scroll-behavior: smooth;
+  scrollbar-width: thin; 
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent; 
+}
+
 .movie-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.movie-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.movie-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2); 
+  border-radius: 4px; 
+}
+
+.movie-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+
+/* .movie-container::-webkit-scrollbar {
   display: none;
 }
 
 .movie-container {
   -ms-overflow-style: none; 
   scrollbar-width: none; 
-}
+} */

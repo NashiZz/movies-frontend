@@ -1,4 +1,3 @@
-"use client";
 
 import React, { useEffect, useState, useRef } from "react";
 import { getMoviesByGenre } from "../../../service/movieService";
@@ -60,7 +59,6 @@ const MovieAll = () => {
                             <div
                                 ref={(el) => (movieContainerRefs.current[genre.name] = el)}
                                 className="flex overflow-x-auto gap-6 movie-container overflow-y-hidden"
-                                style={{ scrollBehavior: "smooth", scrollbarWidth: "none" }}
                             >
                                 {moviesByGenre[genre.name]?.map((movie) => (
                                     <MovieCard key={movie.idmovie} movie={movie} />
