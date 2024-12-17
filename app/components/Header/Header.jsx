@@ -373,7 +373,12 @@ function Header() {
               type="text"
               value={searchText}
               onChange={handleSearchChange}
-              onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit(e)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSearchSubmit(e);
+                  setIsSearchActive(false); // ปิดการ์ดการค้นหาหลังจากกด Enter
+                }
+              }}
               placeholder="พิมพ์ข้อความที่จะค้นหา..."
               className="w-full border-none rounded-md px-3 py-2 focus:outline-none"
             />
@@ -388,6 +393,7 @@ function Header() {
                   key={movie.idmovie}
                   to={`/movies/${movie.title}/${movie.idmovie}`}
                   className="block text-gray-700 hover:bg-gray-100 p-2 rounded-md"
+                  onClick={() => setIsSearchActive(false)} // ปิดการค้นหาหลังจากคลิกตัวเลือก
                 >
                   <FontAwesomeIcon icon={faSearch} className="h-3 w-3 mr-2 ml-2" />
                   {movie.title}
