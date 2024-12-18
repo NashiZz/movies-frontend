@@ -3,7 +3,7 @@ import axios from "axios";
 
 const API_BASE_URL = "http://localhost:8080/api";
 
-export const getMoviesAll = async (page = 1, size = 20) => {
+export const getMoviesAll = async (page = 1, size = 50) => {
     try {
         const response = await axios.get(`${API_BASE_URL}/movies`, {
             params: {

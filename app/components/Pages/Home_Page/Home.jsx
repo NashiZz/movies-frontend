@@ -63,7 +63,7 @@ const Home = () => {
             <div className="w-full flex justify-center mb-10">
                 <hr className="border-t-2 text-teal-500 w-11/12" />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-10 mx-20 justify-items-center">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-10 mx-20 justify-items-center">
                 {movies.map((movie) => (
                     <Link to={`/movies/${movie.title}/${movie.idmovie}`} key={movie.idmovie}>
                         <div className="bg-white mt-6 shadow-md rounded-lg overflow-hidden transform hover:scale-105 transition-transform duration-300 w-[200px] h-[480px] flex flex-col">

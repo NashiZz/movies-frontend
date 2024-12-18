@@ -102,7 +102,7 @@ function Header() {
     setSearchText(e.target.value);
     debouncedSearch(e.target.value);
   };
-
+  
   const handleSearchSubmit = async (e) => {
     e.preventDefault();
     if (searchText.trim()) {
@@ -220,7 +220,7 @@ function Header() {
 
               {dropdownOpen === "genres" && (
                 <div
-                  className="absolute bg-white shadow-lg rounded-md mt-2 z-10 w-full md:w-96 max-h-96 border border-gray-200 overflow-y-auto left-1/2 transform -translate-x-1/2"
+                  className="absolute bg-white shadow-lg rounded-md mt-2 z-10 w-full md:w-96 max-h-96 border border-gray-200 overflow-y-auto left-1/2 transform -translate-x-3/4"
                 >
                   {loading ? (
                     <div className="px-4 py-2 text-gray-500">กำลังโหลด...</div>
