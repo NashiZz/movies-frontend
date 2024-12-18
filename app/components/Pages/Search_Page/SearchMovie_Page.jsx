@@ -69,6 +69,7 @@ const SearchResults = () => {
                                     />
                                     <div className="flex flex-col ml-2 p-4">
                                         <h3 className="text-lg font-medium text-gray-800">{movie.title}</h3>
+                                        <p className="text-gray-400 text-sm">{movie.genres.map((g) => g.name).join(", ")}</p>
                                         <p className="text-gray-400 text-sm">{movie.release_date ? formatThaiDate(movie.release_date) : "ไม่ระบุ"}</p>
                                         <p className="text-gray-600 mt-6 line-clamp-2 text-sm">
                                             {movie.overview}
