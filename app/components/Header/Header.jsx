@@ -15,7 +15,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getAllGenres } from "../../service/genreService";
-import { searchMovieByName } from "../../service/movieService";
+import { getMoviesByGenre, searchMovieByName, searchMovies } from "../../service/movieService";
 
 function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -102,7 +102,7 @@ function Header() {
     setSearchText(e.target.value);
     debouncedSearch(e.target.value);
   };
-  
+
   const handleSearchSubmit = async (e) => {
     e.preventDefault();
     if (searchText.trim()) {
@@ -113,9 +113,15 @@ function Header() {
           pageNo: 0,
           pageSize: 10,
         });
-        setMovies(result?.content || []);
 
-        navigate(`/search/${searchText}`);
+        if (result?.content && result.content.length > 0) {
+          setMovies(result.content || []);
+          navigate(`/search/${searchText}`);
+        } else {
+          const genreResult = await getMoviesByGenre(searchText);
+          setMovies(genreResult);
+          navigate(`/search/${searchText}`);
+        }
       } catch (error) {
         console.error("Search Failed", error);
         setMovies([]);
@@ -136,8 +142,15 @@ function Header() {
           pageNo: 0,
           pageSize: 10,
         });
-        setMovies(result?.content || []);
+
+        if (result?.content && result.content.length > 0) {
+          setMovies(result.content || []);
+        } else {
+          const genreResult = await getMoviesByGenre(query);
+          setMovies(genreResult);
+        }
       } catch (error) {
+        console.error("Debounced Search Failed", error);
         setMovies([]);
       } finally {
         setLoadingMovies(false);
@@ -146,6 +159,50 @@ function Header() {
       setMovies([]);
     }
   }, 500);
+
+  // const handleSearchSubmit = async (e) => {
+  //   e.preventDefault();
+  //   if (searchText.trim()) {
+  //     setLoadingMovies(true);
+  //     try {
+  //       const result = await searchMovieByName({
+  //         title: searchText,
+  //         pageNo: 0,
+  //         pageSize: 10,
+  //       });
+  //       setMovies(result?.content || []);
+
+  //       navigate(`/search/${searchText}`);
+  //     } catch (error) {
+  //       console.error("Search Failed", error);
+  //       setMovies([]);
+  //     } finally {
+  //       setLoadingMovies(false);
+  //     }
+  //   } else {
+  //     setMovies([]);
+  //   }
+  // };
+
+  // const debouncedSearch = debounce(async (query) => {
+  //   if (query.trim()) {
+  //     setLoadingMovies(true);
+  //     try {
+  //       const result = await searchMovieByName({
+  //         title: query,
+  //         pageNo: 0,
+  //         pageSize: 10,
+  //       });
+  //       setMovies(result?.content || []);
+  //     } catch (error) {
+  //       setMovies([]);
+  //     } finally {
+  //       setLoadingMovies(false);
+  //     }
+  //   } else {
+  //     setMovies([]);
+  //   }
+  // }, 500);
 
   useEffect(() => {
     const handleResize = () => {
@@ -376,7 +433,7 @@ function Header() {
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   handleSearchSubmit(e);
-                  setIsSearchActive(false); // ปิดการ์ดการค้นหาหลังจากกด Enter
+                  setIsSearchActive(false);
                 }
               }}
               placeholder="พิมพ์ข้อความที่จะค้นหา..."
@@ -393,10 +450,10 @@ function Header() {
                   key={movie.idmovie}
                   to={`/movies/${movie.title}/${movie.idmovie}`}
                   className="block text-gray-700 hover:bg-gray-100 p-2 rounded-md"
-                  onClick={() => setIsSearchActive(false)} // ปิดการค้นหาหลังจากคลิกตัวเลือก
+                  onClick={() => setIsSearchActive(false)}
                 >
                   <FontAwesomeIcon icon={faSearch} className="h-3 w-3 mr-2 ml-2" />
-                  {movie.title}
+                  <strong>{movie.title}</strong> - {movie.genres.map((g) => g.name).join(", ")}
                 </Link>
               ))
             ) : (

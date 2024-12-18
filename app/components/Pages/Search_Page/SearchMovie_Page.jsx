@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { searchMovieByName } from "@/app/service/movieService";
+import { getMoviesByGenre, searchMovieByName } from "@/app/service/movieService";
 
 const SearchResults = () => {
     const { searchText } = useParams();
@@ -15,7 +15,13 @@ const SearchResults = () => {
                     pageNo: 0,
                     pageSize: 20,
                 });
-                setMovies(result?.content || []);
+
+                if (result?.content && result.content.length > 0) {
+                    setMovies(result.content || []);
+                } else {
+                    const genreResult = await getMoviesByGenre(searchText);
+                    setMovies(genreResult || []);
+                }
             } catch (error) {
                 console.error("Search Failed", error);
                 setMovies([]);

@@ -7,8 +7,8 @@ export const getMoviesAll = async (page = 1, size = 50) => {
     try {
         const response = await axios.get(`${API_BASE_URL}/movies`, {
             params: {
-                page, 
-                size,    
+                page,
+                size,
             },
         });
 
@@ -24,7 +24,7 @@ export const getMoviesAll = async (page = 1, size = 50) => {
                     movie.rating,
                     movie.genres,
                 )),
-                totalPages: response.data.totalPages  
+                totalPages: response.data.totalPages
             };
         }
 
@@ -78,10 +78,47 @@ export const searchMovieByName = async (req) => {
     }
 };
 
+// export const searchMovies = async ({ title, genre }) => {
+//     try {
+//         // เตรียม params ตามการค้นหาที่กำหนด
+//         const params = {};
+//         if (title) {
+//             params.title = title; // ถ้ามี title ให้ส่งไป
+//         }
+//         if (genre) {
+//             params.genre = genre; // ถ้ามี genre ให้ส่งไป
+//         }
+
+//         const response = await axios.get(`${API_BASE_URL}/search`, {
+//             params,
+//         });
+
+//         if (response.data && Array.isArray(response.data)) {
+//             return response.data.map(
+//                 (movie) =>
+//                     new movieRes(
+//                         movie.idmovie,
+//                         movie.title,
+//                         movie.overview,
+//                         movie.release_date,
+//                         movie.poster_path,
+//                         movie.background_path,
+//                         movie.rating,
+//                         movie.genres
+//                     )
+//             );
+//         }
+//         throw new Error("Invalid response structure");
+//     } catch (error) {
+//         console.error("Error searching movies:", error);
+//         throw error;
+//     }
+// };
+
 export const getMoviesByGenre = async (genre) => {
     try {
         const response = await axios.get(`${API_BASE_URL}/movies/genre`, {
-            params: { genre },  
+            params: { genre },
         });
 
         const movies = response.data.map(
@@ -96,7 +133,7 @@ export const getMoviesByGenre = async (genre) => {
                 movie.genres
             )
         );
-        
+
         return movies;
     } catch (error) {
         console.error("Error fetching movies by genre:", error);
@@ -107,11 +144,11 @@ export const getMoviesByGenre = async (genre) => {
 export const getMoviesAllGenre = async (genre, page = 0, size = 20) => {
     try {
         const response = await axios.get(`${API_BASE_URL}/movies/Allgenre`, {
-            params: { 
+            params: {
                 genre,
                 page,
                 size
-             },  
+            },
         });
 
         if (response.data && Array.isArray(response.data.content)) {
@@ -126,7 +163,7 @@ export const getMoviesAllGenre = async (genre, page = 0, size = 20) => {
                     movie.rating,
                     movie.genres,
                 )),
-                totalPages: response.data.totalPages  
+                totalPages: response.data.totalPages
             };
         }
     } catch (error) {
