@@ -1,24 +1,48 @@
 import { Link, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { searchMovieByName } from "@/app/service/movieService";
+import { getMoviesByGenre, searchMovieByName } from "@/app/service/movieService";
+import { searchGenreByName, searchMoviesByGenre } from "@/app/service/genreService";
 
 const SearchResults = () => {
     const { searchText } = useParams();
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchMovies = async () => {
+            setLoading(true);
+            setError(null);
+
             try {
-                const result = await searchMovieByName({
+                const movieResult = await searchMovieByName({
                     title: searchText,
                     pageNo: 0,
-                    pageSize: 20,
+                    pageSize: 50,
                 });
-                setMovies(result?.content || []);
-            } catch (error) {
-                console.error("Search Failed", error);
-                setMovies([]);
+
+                const genreResult = await searchMoviesByGenre(searchText, 0, 50);
+
+                const combinedResults = [
+                    ...(movieResult?.content || []),
+                    ...(genreResult?.content || []),
+                ];
+
+                const uniqueResults = combinedResults.filter((value, index, self) => {
+                    return index === self.findIndex((t) => t.idmovie === value.idmovie);
+                });
+
+                console.log(uniqueResults);
+                
+
+                if (uniqueResults.length > 0) {
+                    setMovies(uniqueResults);
+                } else {
+                    setMovies([]);
+                }
+            } catch (err) {
+                console.error("Error fetching search results:", err);
+                setError("ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
             } finally {
                 setLoading(false);
             }
@@ -49,23 +73,36 @@ const SearchResults = () => {
                 <div className="text-center">กำลังโหลด...</div>
             ) : movies.length > 0 ? (
                 <div className="flex flex-col gap-4">
-                    {movies.map((movie) => (
-                        <Link to={`/movies/${movie.title}/${movie.idmovie}`} key={movie.idmovie}>
+                    {movies.map((item) => (
+                        <Link
+                            to={`/movies/${item.title}/${item.idmovie}`}
+                            key={item.idmovie}
+                        >
                             <div
-                                key={movie.idmovie}
                                 className="flex flex-row bg-white rounded-lg shadow-lg hover:shadow-xl border border-gray-200 transition duration-300 ease-in-out"
                             >
                                 <div className="w-full flex flex-row">
-                                    <img
-                                        src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                                        alt={movie.title}
-                                        className="w-auto max-w-[100px] h-auto rounded-l-md"
-                                    />
+                                    {item.poster_path && (
+                                        <img
+                                            src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
+                                            alt={item.title}
+                                            className="w-auto max-w-[100px] h-auto rounded-l-md"
+                                        />
+                                    )}
                                     <div className="flex flex-col ml-2 p-4">
-                                        <h3 className="text-lg font-medium text-gray-800">{movie.title}</h3>
-                                        <p className="text-gray-400 text-sm">{movie.release_date ? formatThaiDate(movie.release_date) : "ไม่ระบุ"}</p>
+                                        <h3 className="text-lg font-medium text-gray-800">
+                                            {item.title}
+                                        </h3>
+                                        {item.genres && (
+                                            <p className="text-gray-400 text-sm">
+                                                {item.genres.map((g) => g.name).join(", ")}
+                                            </p>
+                                        )}
+                                        <p className="text-gray-400 text-sm">
+                                            {item.release_date ? formatThaiDate(item.release_date) : "ไม่ระบุ"}
+                                        </p>
                                         <p className="text-gray-600 mt-6 line-clamp-2 text-sm">
-                                            {movie.overview}
+                                            {item.overview || "ไม่มีคำอธิบาย"}
                                         </p>
                                     </div>
                                 </div>
@@ -74,7 +111,7 @@ const SearchResults = () => {
                     ))}
                 </div>
             ) : (
-                <div className="text-center">ไม่พบผลลัพธ์ที่ตรงกับคำค้นหา</div>
+                <div className="flex justify-center items-center h-screen">ไม่พบผลลัพธ์ที่ตรงกับคำค้นหา</div>
             )}
         </div>
 

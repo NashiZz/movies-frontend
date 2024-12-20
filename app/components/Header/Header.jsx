@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import throttle from "lodash/throttle";
 import debounce from 'lodash.debounce';
@@ -12,10 +12,13 @@ import {
   faChevronUp,
   faUser,
   faSearch,
+  faFilm,
+  faTags
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getAllGenres } from "../../service/genreService";
-import { searchMovieByName } from "../../service/movieService";
+import { getAllGenres, searchGenreByName } from "../../service/genreService";
+import { getMoviesByGenre, searchMovieByName, searchMovies } from "../../service/movieService";
+import AuthPage from "../Pages/Login_Page/AuthPage";
 
 function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -28,18 +31,9 @@ function Header() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dropdownIcon, setDropdownIcon] = useState(faChevronDown);
-
-  const [firstname, setFirstname] = useState("");
-  const [lastname, setLastname] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [address, setAddress] = useState("");
-
-  const [loginError, setLoginError] = useState("");
   const [loadingMovies, setLoadingMovies] = useState(false);
 
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [activeTab, setActiveTab] = useState("login");
 
   const navigate = useNavigate();
 
@@ -47,17 +41,9 @@ function Header() {
     setShowLoginModal(true);
   };
 
-  const handleModalClose = () => {
-    setShowLoginModal(false);
-  };
-
   useEffect(() => {
     const handleScroll = throttle(() => {
-      if (window.scrollY > 50.0) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      setIsScrolled(window.scrollY > 50);
     }, 200);
 
     window.addEventListener("scroll", handleScroll);
@@ -82,71 +68,6 @@ function Header() {
     fetchGenres();
   }, []);
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-  };
-
-  const handleRegister = (e) => {
-    e.preventDefault();
-  };
-
-  const handleSearchToggle = () => {
-    setIsSearchActive((prev) => !prev);
-    if (isSearchActive) {
-      setSearchText("");
-      setMovies([]);
-    }
-  };
-
-  const handleSearchChange = (e) => {
-    setSearchText(e.target.value);
-    debouncedSearch(e.target.value);
-  };
-
-  const handleSearchSubmit = async (e) => {
-    e.preventDefault();
-    if (searchText.trim()) {
-      setLoadingMovies(true);
-      try {
-        const result = await searchMovieByName({
-          title: searchText,
-          pageNo: 0,
-          pageSize: 10,
-        });
-        setMovies(result?.content || []);
-
-        navigate(`/search/${searchText}`);
-      } catch (error) {
-        console.error("Search Failed", error);
-        setMovies([]);
-      } finally {
-        setLoadingMovies(false);
-      }
-    } else {
-      setMovies([]);
-    }
-  };
-
-  const debouncedSearch = debounce(async (query) => {
-    if (query.trim()) {
-      setLoadingMovies(true);
-      try {
-        const result = await searchMovieByName({
-          title: query,
-          pageNo: 0,
-          pageSize: 10,
-        });
-        setMovies(result?.content || []);
-      } catch (error) {
-        setMovies([]);
-      } finally {
-        setLoadingMovies(false);
-      }
-    } else {
-      setMovies([]);
-    }
-  }, 500);
-
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 768) {
@@ -160,6 +81,80 @@ function Header() {
 
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Search
+  const debouncedSearch = useCallback(
+    debounce(async (query) => {
+      if (query.trim()) {
+        setLoadingMovies(true);
+        try {
+          const movieResult = await searchMovieByName({ title: query, pageNo: 0, pageSize: 10 });
+          const genreResult = await searchGenreByName({ name: query, pageable: { page: 0, size: 10 } });
+
+          const combinedResults = [...(movieResult?.content || []), ...(genreResult?.content || [])];
+          setMovies(combinedResults);
+        } catch (error) {
+          console.error("Debounced Search Failed", error);
+          setMovies([]);
+        } finally {
+          setLoadingMovies(false);
+        }
+      } else {
+        setMovies([]);
+      }
+    }, 500),
+    []
+  );
+
+  const handleSearchChange = (e) => {
+    setSearchText(e.target.value);
+    debouncedSearch(e.target.value);
+  };
+
+  const handleSearchSubmit = async (e) => {
+    e.preventDefault();
+    if (searchText.trim()) {
+      setLoadingMovies(true);
+      try {
+        const movieResult = await searchMovieByName({ title: searchText, pageNo: 0, pageSize: 10 });
+        const genreResult = await searchGenreByName({ name: searchText, pageable: { page: 0, size: 10 } });
+
+        const combinedResults = [...(movieResult?.content || []), ...(genreResult?.content || [])];
+        setMovies(combinedResults);
+        navigate(`/search/${searchText}`);
+        handleSearchResultClick(combinedResults);
+      } catch (error) {
+        console.error("Search Failed", error);
+        setMovies([]);
+      } finally {
+        setLoadingMovies(false);
+      }
+    }
+  };
+
+  const handleSearchResultClick = (item) => {
+    setSearchText("");
+    debouncedSearch.cancel();
+    setMovies([]);
+    setIsSearchActive(false);
+  };
+
+  const handleSearchToggle = () => {
+    setIsSearchActive((prev) => !prev);
+    if (isSearchActive) {
+      setSearchText("");
+      setMovies([]);
+    }
+  };
+
+  // LOGIN
+  const handleLogin = (e) => {
+    e.preventDefault();
+  };
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+  };
 
   return (
     <>
@@ -220,7 +215,7 @@ function Header() {
 
               {dropdownOpen === "genres" && (
                 <div
-                  className="absolute bg-white shadow-lg rounded-md mt-2 z-10 w-full md:w-96 max-h-96 border border-gray-200 overflow-y-auto left-1/2 transform -translate-x-1/2"
+                  className="absolute bg-white shadow-lg rounded-md mt-2 z-10 w-full md:w-96 max-h-96 border border-gray-200 overflow-y-auto left-1/2 transform -translate-x-3/4"
                 >
                   {loading ? (
                     <div className="px-4 py-2 text-gray-500">กำลังโหลด...</div>
@@ -267,12 +262,12 @@ function Header() {
                 </button>
               )}
             </div>
-            {/* <button
+            <button
               onClick={handleModalOpen}
               className="hidden md:block text-indigo-400 hover:text-gray-700 py-2"
             >
               <FontAwesomeIcon icon={faUser} className="h-6 w-6" />
-            </button> */}
+            </button>
           </div>
         </div>
 
@@ -376,7 +371,6 @@ function Header() {
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   handleSearchSubmit(e);
-                  setIsSearchActive(false); // ปิดการ์ดการค้นหาหลังจากกด Enter
                 }
               }}
               placeholder="พิมพ์ข้อความที่จะค้นหา..."
@@ -388,15 +382,24 @@ function Header() {
             {loadingMovies ? (
               <div className="text-gray-500">กำลังโหลด...</div>
             ) : movies.length > 0 ? (
-              movies.map((movie) => (
+              movies.map((item) => (
                 <Link
-                  key={movie.idmovie}
-                  to={`/movies/${movie.title}/${movie.idmovie}`}
+                  key={item.idmovie || item.idgen}
+                  to={
+                    item.idmovie
+                      ? `/movies/${item.title}/${item.idmovie}`
+                      : `/movies/genres/${item.name}`
+                  }
                   className="block text-gray-700 hover:bg-gray-100 p-2 rounded-md"
-                  onClick={() => setIsSearchActive(false)} // ปิดการค้นหาหลังจากคลิกตัวเลือก
+                  onClick={() => handleSearchResultClick(item)}
                 >
-                  <FontAwesomeIcon icon={faSearch} className="h-3 w-3 mr-2 ml-2" />
-                  {movie.title}
+                  <FontAwesomeIcon
+                    icon={item.idmovie ? faFilm : faTags}
+                    className="h-3 w-3 mr-2 ml-2"
+                  />
+                  <strong>
+                    {item.title || item.name}
+                  </strong>
                 </Link>
               ))
             ) : (
@@ -405,111 +408,11 @@ function Header() {
               </div>
             )}
           </div>
-        </div>
-      )}
 
-      {showLoginModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full relative">
-            <button
-              onClick={handleModalClose}
-              className="absolute top-2 right-4 text-gray-500 hover:text-gray-700 text-3xl"
-            >
-              &times;
-            </button>
-            <div className="flex justify-center mb-4">
-              <button
-                onClick={() => setActiveTab("login")}
-                className={`px-4 py-2 text-lg font-semibold ${activeTab === "login"
-                  ? "text-blue-500 border-b-2 border-blue-500"
-                  : "text-gray-500"
-                  }`}
-              >
-                เข้าสู่ระบบ
-              </button>
-              <button
-                onClick={() => setActiveTab("register")}
-                className={`px-4 py-2 text-lg font-semibold ${activeTab === "register"
-                  ? "text-blue-500 border-b-2 border-blue-500"
-                  : "text-gray-500"
-                  }`}
-              >
-                สมัครสมาชิก
-              </button>
-            </div>
-            {activeTab === "login" ? (
-              <form onSubmit={handleLogin}>
-                <div className="mb-4">
-                  <label className="block text-gray-700">ชื่อผู้ใช้</label>
-                  <input
-                    type="text"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-2 border rounded-md"
-                    placeholder="กรุณาระบุชื่อผู้ใช้"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700">รหัสผ่าน</label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-2 border rounded-md"
-                    placeholder="กรุณาระบุรหัสผ่าน"
-                  />
-                </div>
-                {loginError && <p className="text-red-500">{loginError}</p>}
-                <button
-                  type="submit"
-                  className="w-full bg-blue-500 text-white py-2 rounded-md"
-                >
-                  ลงชื่อเข้าใช้
-                </button>
-              </form>
-            ) : (
-              <form onSubmit={handleRegister}>
-                <div className="mb-4">
-                  <label className="block text-gray-700">ชื่อจริง</label>
-                  <input
-                    type="text"
-                    value={firstname}
-                    onChange={(e) => setFirstname(e.target.value)}
-                    className="w-full px-4 py-2 border rounded-md"
-                    placeholder="กรุณาระบุชื่อจริง"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700">นามสกุล</label>
-                  <input
-                    type="text"
-                    value={lastname}
-                    onChange={(e) => setLastname(e.target.value)}
-                    className="w-full px-4 py-2 border rounded-md"
-                    placeholder="กรุณาระบุนามสกุล"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700">ที่อยู่</label>
-                  <input
-                    type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    className="w-full px-4 py-2 border rounded-md"
-                    placeholder="กรุณาระบุที่อยู่"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full bg-green-500 text-white py-2 rounded-md"
-                >
-                  สมัครสมาชิก
-                </button>
-              </form>
-            )}
-          </div>
         </div>
       )}
+      
+      <AuthPage showModal={showLoginModal} setShowModal={setShowLoginModal} />
     </>
   );
 }
