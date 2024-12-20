@@ -35,29 +35,6 @@ export const getMoviesAll = async (page = 1, size = 50) => {
     }
 };
 
-// export const getAllMovies = async () => {
-//     try {
-//         const response = await axios.get(`${API_BASE_URL}/movies`)
-
-//         return response.data.map(
-//             (movie) =>
-//                 new movieRes(
-//                     movie.idmovie,
-//                     movie.title,
-//                     movie.overview,
-//                     movie.release_date,
-//                     movie.poster_path,
-//                     movie.background_path,
-//                     movie.rating,
-//                     movie.genres
-//                 )
-//         );
-//     } catch (error) {
-//         console.error("Failed to fetching all movies: ", error);
-//         throw error;
-//     }
-// };
-
 export const getMovieById = async (id) => {
     try {
         const response = await axios.get(`${API_BASE_URL}/movies/${id}`);
@@ -77,43 +54,6 @@ export const searchMovieByName = async (req) => {
         throw error;
     }
 };
-
-// export const searchMovies = async ({ title, genre }) => {
-//     try {
-//         // เตรียม params ตามการค้นหาที่กำหนด
-//         const params = {};
-//         if (title) {
-//             params.title = title; // ถ้ามี title ให้ส่งไป
-//         }
-//         if (genre) {
-//             params.genre = genre; // ถ้ามี genre ให้ส่งไป
-//         }
-
-//         const response = await axios.get(`${API_BASE_URL}/search`, {
-//             params,
-//         });
-
-//         if (response.data && Array.isArray(response.data)) {
-//             return response.data.map(
-//                 (movie) =>
-//                     new movieRes(
-//                         movie.idmovie,
-//                         movie.title,
-//                         movie.overview,
-//                         movie.release_date,
-//                         movie.poster_path,
-//                         movie.background_path,
-//                         movie.rating,
-//                         movie.genres
-//                     )
-//             );
-//         }
-//         throw new Error("Invalid response structure");
-//     } catch (error) {
-//         console.error("Error searching movies:", error);
-//         throw error;
-//     }
-// };
 
 export const getMoviesByGenre = async (genre) => {
     try {

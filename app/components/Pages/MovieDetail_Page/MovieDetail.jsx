@@ -134,24 +134,23 @@ const MovieDetail = () => {
             <div className="block md:hidden p-6">
                 <div className="flex flex-col md:flex-row mb-8">
                     <div className="flex flex-row ">
-                        <div className="w-1/3 sm:w-1/3 md:w-1/3 md:mb-0 -mt-28 z-10">
+                        <div className="w-2/5 sm:w-2/5 md:w-2/5 md:mb-0 -mt-28 z-10">
                             <img
                                 src={movie.getPosterUrl()}
                                 alt={movie.title}
                                 className="w-full max-w-[250px] h-auto"
                             />
-
                         </div>
 
-                        <div className="flex-col ml-10 mb-18">
-                            <h1 className="text-lg md:text-2xl font-bold">{movie.title}</h1>
-                            <p className="text-sm md:text-base text-gray-500 mt-2">
+                        <div className="flex-col md:w-2/3 ml-10 mb-18">
+                            <h1 className="text-lg sm:text-xl md:text-2xl font-bold">{movie.title}</h1>
+                            <p className="text-sm sm:text-base md:text-lg text-gray-500 mt-2">
                                 วันที่ฉาย: {movie.release_date ? formatThaiDate(movie.release_date) : "ไม่ระบุ"}
                             </p>
-                            <p className="text-sm md:text-base text-gray-500 mt-2">
+                            <p className="text-sm sm:text-base md:text-lg text-gray-500 mt-2">
                                 หมวดหมู่: {movie.getGenreNames()}
                             </p>
-                            <p className="text-sm md:text-base text-gray-500 mt-2">
+                            <p className="text-sm sm:text-base md:text-lg text-gray-500 mt-2">
                                 เรทคะแนน: {movie.rating ? parseFloat(movie.rating).toFixed(1) : "ไม่ระบุ"}
                             </p>
 
@@ -171,8 +170,8 @@ const MovieDetail = () => {
 
                     <div className="md:w-2/3 md:ml-12">
                         <div className="mt-4">
-                            <h3 className="text-base md:text-lg font-bold">Overview</h3>
-                            <p className="text-sm md:text-base mt-4 text-gray-700 text-justify">
+                            <h3 className="text-base sm:text-lg md:text-xl font-bold">Overview</h3>
+                            <p className="text-sm sm:text-base md:text-lg mt-4 text-gray-700 text-justify">
                                 {movie.overview || "ยังไม่มีข้อมูลในระบบ"}
                             </p>
                         </div>
