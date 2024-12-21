@@ -71,17 +71,19 @@ const MovieDetail = () => {
                 }}
             >
                 <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-                <div className="absolute inset-0 flex flex-col justify-end px-8 py-6 mt-8 mb-8 ml-12 text-white hidden md:flex">
-                    <h1 className="text-2xl md:text-4xl font-bold">{movie.title}</h1>
-                    <p className="text-sm md:text-lg mt-2">
+                <div className="absolute inset-0 flex-col justify-end px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8 lg:px-12 lg:py-12 text-white hidden md:flex">
+                    <h1 className="text-lg sm:text-xl md:text-2xl lg:text-4xl font-bold">
+                        {movie.title}
+                    </h1>
+                    <p className="text-xs sm:text-sm md:text-base lg:text-lg mt-2">
                         หมวดหมู่:{" "}
                         <span className="font-medium">{movie.getGenreNames()}</span>
-                        <span className="ml-4 mr-4">|</span>
+                        <span className="mx-2">|</span>
                         เรทคะแนน:{" "}
                         <span className="font-medium">
                             {movie.rating ? parseFloat(movie.rating).toFixed(1) : "ไม่ระบุ"}
                         </span>
-                        <span className="ml-4 mr-4">|</span>
+                        <span className="mx-2">|</span>
                         วันที่เข้าฉาย:{" "}
                         <span className="font-medium">
                             {movie.release_date ? formatThaiDate(movie.release_date) : "ไม่ระบุ"}
