@@ -63,11 +63,11 @@ const Home = () => {
             <div className="w-full flex justify-center mb-10">
                 <hr className="border-t-2 text-teal-500 w-11/12" />
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-10 mx-20 justify-items-center">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 px-4 md:px-10 justify-items-center">
                 {movies.map((movie) => (
                     <Link to={`/movies/${movie.title}/${movie.idmovie}`} key={movie.idmovie}>
-                        <div className="bg-white mt-6 shadow-md rounded-lg overflow-hidden transform hover:scale-105 transition-transform duration-300 w-[200px] h-[480px] flex flex-col">
-                            <div className="w-full">
+                        <div className="bg-white shadow-md rounded-lg overflow-hidden transform hover:scale-105 transition-transform duration-300 w-full max-w-[200px] h-[450px] flex flex-col">
+                            <div className="w-full h-[300px] flex items-center justify-center bg-gray-100">
                                 <img
                                     src={movie.getPosterUrl()}
                                     alt={movie.title}
@@ -75,15 +75,15 @@ const Home = () => {
                                 />
                             </div>
 
-                            <div className="p-4 mb-2 text-left flex-1 flex flex-col justify-between">
-                                <p className="text-lg text-gray-600 flex items-center">
+                            <div className="p-4 flex flex-col justify-between flex-grow">
+                                <p className="text-sm text-gray-600 flex items-center">
                                     <FontAwesomeIcon icon={faStar} className="h-4 w-4 text-yellow-400 mr-1" />
                                     {movie.rating ? parseFloat(movie.rating).toFixed(1) : "ไม่ระบุ"}
                                 </p>
-                                <h2 className="text-lg font-semibold line-clamp-2">
+                                <h2 className="text-sm font-semibold mt-2 line-clamp-2">
                                     {movie.title}
                                 </h2>
-                                <p className="text-sm text-blue-500 mb-2 mt-4">
+                                <p className="text-xs text-blue-500 mt-2">
                                     วันที่ฉาย: {movie.release_date}
                                 </p>
                             </div>
@@ -110,8 +110,8 @@ const Home = () => {
                             key={index}
                             onClick={() => setCurrentPage(index)}
                             className={`px-3 py-1 text-sm font-semibold rounded-md ${currentPage === index
-                                    ? "bg-blue-500 text-white"
-                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                ? "bg-blue-500 text-white"
+                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                 }`}
                         >
                             {index + 1}

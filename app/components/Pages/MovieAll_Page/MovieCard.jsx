@@ -17,14 +17,14 @@ const MovieCard = ({ movie }) => {
                 </div>
 
                 <div className="p-4 mb-2 text-left flex-1 flex flex-col justify-between">
-                    <p className="text-lg text-gray-600 flex items-center">
+                    <p className="text-sm text-gray-600 flex items-center">
                         <FontAwesomeIcon icon={faStar} className="h-4 w-4 text-yellow-400 mr-1" />
                         {movie.rating ? parseFloat(movie.rating).toFixed(1) : "ไม่ระบุ"}
                     </p>
-                    <h2 className="text-lg font-semibold line-clamp-2">
+                    <h2 className="text-sm font-semibold mt-2 line-clamp-2">
                         {movie.title}
                     </h2>
-                    <p className="text-sm text-blue-500 mb-2 mt-4">
+                    <p className="text-xs text-blue-500 mb-2 mt-4">
                         วันที่ฉาย: {movie.release_date}
                     </p>
                 </div>
