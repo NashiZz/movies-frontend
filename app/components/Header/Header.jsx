@@ -147,15 +147,6 @@ function Header() {
     }
   };
 
-  // LOGIN
-  const handleLogin = (e) => {
-    e.preventDefault();
-  };
-
-  const handleRegister = (e) => {
-    e.preventDefault();
-  };
-
   return (
     <>
       <header
@@ -181,15 +172,36 @@ function Header() {
             </div>
           </div>
 
-          <button
-            className="text-gray-700 hover:text-indigo-500 flex items-center space-x-2 md:hidden"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            <FontAwesomeIcon
-              icon={isMobileMenuOpen ? faTimes : faBars}
-              className="h-6 w-6 text-indigo-400"
-            />
-          </button>
+          <div className="flex items-center space-x-2 md:hidden ">
+            {isSearchActive ? (
+              <form onSubmit={handleSearchSubmit} className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={handleSearchToggle}
+                  className="text-gray-500 hover:text-indigo-400 mr-2"
+                >
+                  <FontAwesomeIcon icon={faTimes} className="h-6 w-6" />
+                </button>
+              </form>
+            ) : (
+              <button
+                onClick={handleSearchToggle}
+                className="text-indigo-400 hover:text-gray-700 py-2 mr-2"
+              >
+                <FontAwesomeIcon icon={faSearch} className="h-5 w-5" />
+              </button>
+            )}
+            <button
+              className="text-gray-700 hover:text-indigo-500 flex items-center space-x-2 py-2"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              <FontAwesomeIcon
+                icon={isMobileMenuOpen ? faTimes : faBars}
+                className="h-6 w-6 text-indigo-400"
+              />
+            </button>
+          </div>
+
 
           <nav
             className={`hidden md:flex space-x-6 ${isScrolled ? "md:space-x-4" : "md:space-x-6"
@@ -411,7 +423,7 @@ function Header() {
 
         </div>
       )}
-      
+
       <AuthPage showModal={showLoginModal} setShowModal={setShowLoginModal} />
     </>
   );

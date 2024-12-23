@@ -15,26 +15,25 @@ const MovieGenres = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const fetchMovies = async (page) => {
-        try {
-            setLoading(true);
-            const data = await getMoviesAllGenre(genreName, page, 50);
-            setMovies(data.content);
-            setTotalPages(data.totalPages);
-            setLoading(false);
-        } catch (err) {
-            setError(err.message);
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
-        if (genreName) {
-            fetchMovies(currentPage);
-        } else {
-            setLoading(false);
-            setError("ไม่มีหมวดหมู่ที่เลือก");
-        }
+        const fetchMovies = async () => {
+            if (!genreName) {
+                setError("ไม่มีหมวดหมู่ที่เลือก");
+                return;
+            }
+
+            try {
+                const data = await getMoviesAllGenre(genreName, currentPage, 50);
+                setMovies(data.content || []);
+                setTotalPages(data.totalPages || 0);
+                setLoading(false);
+            } catch (err) {
+                setError("ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่");
+                setLoading(false);
+            }
+        };
+
+        fetchMovies();
     }, [genreName, currentPage]);
 
     const loadNextPage = () => {
