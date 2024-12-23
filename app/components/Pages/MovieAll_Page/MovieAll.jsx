@@ -21,16 +21,24 @@ const MovieAll = () => {
         const genresData = await getAllGenres();
         setGenres(genresData);
 
-        const moviesData = {};
-        const visibleMoviesData = {};
+        const moviesData = await Promise.all(
+          genresData.map(async (genre) => {
+            const movies = await getMoviesByGenre(genre.name);
+            return { [genre.name]: movies };
+          })
+        );
 
-        for (let genre of genresData) {
-          const movies = await getMoviesByGenre(genre.name);
-          moviesData[genre.name] = movies;
-          visibleMoviesData[genre.name] = 20;
-        }
+        const moviesByGenreData = moviesData.reduce((acc, data) => {
+          const genreName = Object.keys(data)[0];
+          acc[genreName] = data[genreName];
+          return acc;
+        }, {});
+        setMoviesByGenre(moviesByGenreData);
 
-        setMoviesByGenre(moviesData);
+        const visibleMoviesData = genresData.reduce((acc, genre) => {
+          acc[genre.name] = 20;
+          return acc;
+        }, {});
         setVisibleMovies(visibleMoviesData);
 
         const initialScrollStatus = genresData.reduce((acc, genre) => {
@@ -38,6 +46,7 @@ const MovieAll = () => {
           return acc;
         }, {});
         setScrollStatus(initialScrollStatus);
+
       } catch (error) {
         console.error("Error loading genres and movies:", error);
       } finally {
@@ -48,13 +57,13 @@ const MovieAll = () => {
     fetchGenresAndMovies();
   }, []);
 
-  const debounce = (func, delay) => {
+  const debounce = useCallback((func, delay) => {
     let timer;
     return (...args) => {
       clearTimeout(timer);
       timer = setTimeout(() => func(...args), delay);
     };
-  };
+  }, []);
 
   const handleLoadMore = (genre) => {
     setVisibleMovies((prev) => {
