@@ -92,32 +92,60 @@ const Home = () => {
                 ))}
             </div>
 
-            <div className="flex items-center justify-between mt-10 flex-wrap gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between mt-10 flex-wrap gap-4 sm:gap-6">
                 <button
                     onClick={loadPreviousPage}
                     disabled={currentPage === 0}
-                    className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 disabled:opacity-50 transition-all w-full sm:w-auto"
+                    className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 disabled:opacity-50 transition-all w-full sm:w-auto text-center"
                 >
                     หน้าก่อนหน้า
                 </button>
 
-                <div className="flex items-center space-x-2 sm:space-x-4">
-                    <p className="text-lg font-semibold text-gray-700">
-                        หน้า
-                    </p>
-                    {Array.from({ length: totalPages }, (_, index) => (
-                        <button
-                            key={index}
-                            onClick={() => setCurrentPage(index)}
-                            className={`px-3 py-1 text-sm font-semibold rounded-md ${currentPage === index
-                                ? "bg-blue-500 text-white"
-                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                }`}
-                        >
-                            {index + 1}
-                        </button>
-                    ))}
-                    <p className="text-lg font-semibold text-gray-700">
+                <div className="flex items-center justify-center space-x-2 sm:space-x-4 flex-wrap">
+                    <p className="text-lg font-semibold text-gray-700 hidden sm:block">หน้า</p>
+                    {currentPage > 2 && (
+                        <>
+                            <button
+                                onClick={() => setCurrentPage(0)}
+                                className="px-3 py-1 text-sm font-semibold rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            >
+                                1
+                            </button>
+                            {currentPage > 3 && <span className="text-gray-500">...</span>}
+                        </>
+                    )}
+
+                    {Array.from({ length: 5 }, (_, index) => {
+                        const page = currentPage - 2 + index;
+                        if (page >= 0 && page < totalPages) {
+                            return (
+                                <button
+                                    key={page}
+                                    onClick={() => setCurrentPage(page)}
+                                    className={`px-3 py-1 text-sm font-semibold rounded-md ${currentPage === page
+                                            ? "bg-blue-500 text-white"
+                                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                        }`}
+                                >
+                                    {page + 1}
+                                </button>
+                            );
+                        }
+                        return null;
+                    })}
+
+                    {currentPage < totalPages - 3 && (
+                        <>
+                            {currentPage < totalPages - 4 && <span className="text-gray-500">...</span>}
+                            <button
+                                onClick={() => setCurrentPage(totalPages - 1)}
+                                className="px-3 py-1 text-sm font-semibold rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            >
+                                {totalPages}
+                            </button>
+                        </>
+                    )}
+                    <p className="text-lg font-semibold text-gray-700 hidden sm:block">
                         จาก {totalPages}
                     </p>
                 </div>
@@ -125,12 +153,11 @@ const Home = () => {
                 <button
                     onClick={loadNextPage}
                     disabled={currentPage === totalPages - 1}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 transition-all w-full sm:w-auto"
+                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 transition-all w-full sm:w-auto text-center"
                 >
                     หน้าถัดไป
                 </button>
             </div>
-
         </div>
     );
 };
