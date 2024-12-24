@@ -26,21 +26,17 @@ function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [movies, setMovies] = useState("");
   const [genres, setGenres] = useState([]);
+  const [loadingGenres, setLoadingGenres] = useState(true);
+  const [loadingSearch, setLoadingSearch] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [searchResults, setSearchResults] = useState([]);
   const [error, setError] = useState(null);
   const [dropdownIcon, setDropdownIcon] = useState(faChevronDown);
-  const [loadingMovies, setLoadingMovies] = useState(false);
-
   const [showLoginModal, setShowLoginModal] = useState(false);
-
   const navigate = useNavigate();
 
-  const handleModalOpen = () => {
-    setShowLoginModal(true);
-  };
-
+  // Check Header
   useEffect(() => {
     const handleScroll = throttle(() => {
       setIsScrolled(window.scrollY > 50);
@@ -53,54 +49,47 @@ function Header() {
     };
   }, []);
 
+  // LoadData Genre
   useEffect(() => {
     const fetchGenres = async () => {
       try {
         const data = await getAllGenres();
-        setGenres(data);
-        setLoading(false);
-      } catch (error) {
-        setError("Failed to fetch Genres");
-        setLoading(false);
+        setGenres(data || []);
+      } catch {
+        setError("Failed to fetch genres.");
+      } finally {
+        setLoadingGenres(false);
       }
     };
-
     fetchGenres();
   }, []);
 
+  // ResponUI 
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 768) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-
+    const handleResize = () => setIsMobileMenuOpen(window.innerWidth <= 768 ? false : isMobileMenuOpen);
     window.addEventListener("resize", handleResize);
-
-    handleResize();
-
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [isMobileMenuOpen]);
 
   // Search
   const debouncedSearch = useCallback(
     debounce(async (query) => {
-      if (query.trim()) {
-        setLoadingMovies(true);
-        try {
-          const movieResult = await searchMovieByName({ title: query, pageNo: 0, pageSize: 10 });
-          const genreResult = await searchGenreByName({ name: query, pageable: { page: 0, size: 10 } });
+      if (!query.trim()) {
+        setSearchResults([]);
+        return;
+      }
 
-          const combinedResults = [...(movieResult?.content || []), ...(genreResult?.content || [])];
-          setMovies(combinedResults);
-        } catch (error) {
-          console.error("Debounced Search Failed", error);
-          setMovies([]);
-        } finally {
-          setLoadingMovies(false);
-        }
-      } else {
-        setMovies([]);
+      setLoadingSearch(true);
+      try {
+        const [movies, genres] = await Promise.all([
+          searchMovieByName({ title: query, pageNo: 0, pageSize: 10 }),
+          searchGenreByName({ name: query, pageable: { page: 0, size: 10 } }),
+        ]);
+        setSearchResults([...(movies?.content || []), ...(genres?.content || [])]);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setLoadingSearch(false);
       }
     }, 500),
     []
@@ -111,40 +100,28 @@ function Header() {
     debouncedSearch(e.target.value);
   };
 
-  const handleSearchSubmit = async (e) => {
+  const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchText.trim()) {
-      setLoadingMovies(true);
-      try {
-        const movieResult = await searchMovieByName({ title: searchText, pageNo: 0, pageSize: 10 });
-        const genreResult = await searchGenreByName({ name: searchText, pageable: { page: 0, size: 10 } });
-
-        const combinedResults = [...(movieResult?.content || []), ...(genreResult?.content || [])];
-        setMovies(combinedResults);
-        navigate(`/search/${searchText}`);
-        handleSearchResultClick(combinedResults);
-      } catch (error) {
-        console.error("Search Failed", error);
-        setMovies([]);
-      } finally {
-        setLoadingMovies(false);
-      }
+      navigate(`/search/${searchText}`);
+      setSearchText("");
+      setIsSearchActive(false);
+      debouncedSearch.cancel();
+      setSearchResults([]);
     }
-  };
-
-  const handleSearchResultClick = (item) => {
-    setSearchText("");
-    debouncedSearch.cancel();
-    setMovies([]);
-    setIsSearchActive(false);
   };
 
   const handleSearchToggle = () => {
     setIsSearchActive((prev) => !prev);
     if (isSearchActive) {
       setSearchText("");
-      setMovies([]);
+      setSearchResults([]);
     }
+  };
+
+  // Show Login
+  const handleModalOpen = () => {
+    setShowLoginModal(true);
   };
 
   return (
@@ -201,8 +178,7 @@ function Header() {
               />
             </button>
           </div>
-
-
+          
           <nav
             className={`hidden md:flex space-x-6 ${isScrolled ? "md:space-x-4" : "md:space-x-6"
               }`}
@@ -391,10 +367,10 @@ function Header() {
           </div>
 
           <div className="ml-6">
-            {loadingMovies ? (
+            {loadingSearch ? (
               <div className="text-gray-500">กำลังโหลด...</div>
-            ) : movies.length > 0 ? (
-              movies.map((item) => (
+            ) : searchResults.length > 0 ? (
+              searchResults.map((item) => (
                 <Link
                   key={item.idmovie || item.idgen}
                   to={
@@ -403,7 +379,6 @@ function Header() {
                       : `/movies/genres/${item.name}`
                   }
                   className="block text-gray-700 hover:bg-gray-100 p-2 rounded-md"
-                  onClick={() => handleSearchResultClick(item)}
                 >
                   <FontAwesomeIcon
                     icon={item.idmovie ? faFilm : faTags}
