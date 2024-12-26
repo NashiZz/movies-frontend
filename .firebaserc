@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "movies-db-6b292",
+    "dev": "movies-db-6b292"
+  },
+  "targets": {},
+  "etags": {}
+}

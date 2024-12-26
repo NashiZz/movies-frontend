@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
+
 import throttle from "lodash/throttle";
 import debounce from 'lodash.debounce';
 
@@ -34,6 +35,9 @@ function Header() {
   const [error, setError] = useState(null);
   const [dropdownIcon, setDropdownIcon] = useState(faChevronDown);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
   const navigate = useNavigate();
 
   // Check Header
@@ -41,7 +45,6 @@ function Header() {
     const handleScroll = throttle(() => {
       setIsScrolled(window.scrollY > 50);
     }, 200);
-
     window.addEventListener("scroll", handleScroll);
 
     return () => {
@@ -124,6 +127,29 @@ function Header() {
     setShowLoginModal(true);
   };
 
+  const handleLogout = () => {
+    console.log("Logged out");
+    setUserProfile(null); 
+    navigate("/");
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleProfileClick = () => {
+    setProfileMenuOpen((prev) => !prev);
+  };
+
   return (
     <>
       <header
@@ -178,7 +204,7 @@ function Header() {
               />
             </button>
           </div>
-          
+
           <nav
             className={`hidden md:flex space-x-6 ${isScrolled ? "md:space-x-4" : "md:space-x-6"
               }`}
@@ -205,7 +231,7 @@ function Header() {
                 <div
                   className="absolute bg-white shadow-lg rounded-md mt-2 z-10 w-full md:w-96 max-h-96 border border-gray-200 overflow-y-auto left-1/2 transform -translate-x-3/4"
                 >
-                  {loading ? (
+                  {loadingGenres ? (
                     <div className="px-4 py-2 text-gray-500">กำลังโหลด...</div>
                   ) : error ? (
                     <div className="px-4 py-2 text-red-500">{error}</div>
@@ -250,15 +276,47 @@ function Header() {
                 </button>
               )}
             </div>
-            <button
-              onClick={handleModalOpen}
-              className="hidden md:block text-indigo-400 hover:text-gray-700 py-2"
-            >
-              <FontAwesomeIcon icon={faUser} className="h-6 w-6" />
-            </button>
+            {userProfile?.img_profile ? (
+              <div className="relative" ref={profileMenuRef}>
+                <img
+                  src={userProfile.img_profile}
+                  alt="User Profile"
+                  className="rounded-full w-12 h-12 object-cover shadow-lg cursor-pointer"
+                  onClick={handleProfileClick}
+                />
+                {profileMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg rounded-md">
+                    <button
+                      className="block w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
+                      onClick={() => navigate("/user-info")}
+                    >
+                      ข้อมูลผู้ใช้
+                    </button>
+                    <button
+                      className="block w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
+                      onClick={() => navigate("/favorites")}
+                    >
+                      ภาพยนต์ที่ถูกใจ
+                    </button>
+                    <button
+                      className="block w-full px-4 py-2 text-left text-red-600 hover:bg-red-100"
+                      onClick={handleLogout}
+                    >
+                      ล๊อคเอาท์
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowLoginModal(true)}
+                className="text-indigo-400 hover:text-gray-700 py-2"
+              >
+                <FontAwesomeIcon icon={faUser} className="h-6 w-6" />
+              </button>
+            )}
           </div>
         </div>
-
         <div>
           {isMobileMenuOpen && (
             <div
@@ -399,7 +457,15 @@ function Header() {
         </div>
       )}
 
-      <AuthPage showModal={showLoginModal} setShowModal={setShowLoginModal} />
+      <AuthPage
+        showModal={showLoginModal}
+        setShowModal={setShowLoginModal}
+        onLoginSuccess={(profile) => {
+          console.log("Updated Profile:", profile);
+          setUserProfile(profile);
+        }}
+      />
+
     </>
   );
 }
