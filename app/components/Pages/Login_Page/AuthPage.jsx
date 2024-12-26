@@ -1,8 +1,9 @@
 import { userRes } from "@/app/models/Users/userRes";
-import { loginUser, RegisterUsers } from "@/app/service/userService";
+import { getUserProfile, loginUser, RegisterUsers } from "@/app/service/userService";
+import { getDownloadURL, getStorage, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
 import React, { useState } from "react";
 
-const AuthPage = ({ showModal, setShowModal }) => {
+const AuthPage = ({ showModal, setShowModal, onLoginSuccess }) => {
   const [activeTab, setActiveTab] = useState("login");
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -26,10 +27,12 @@ const AuthPage = ({ showModal, setShowModal }) => {
     try {
       const result = await loginUser(emailOrUsername, password);
       if (result === "Login successful!") {
+        let profile = await getUserProfile(emailOrUsername);
+        onLoginSuccess(profile);
         alert("ล๊อคอินเข้าสู่ระบบสำเร็จ!");
         setShowModal(false);
       } else {
-        setLoginError(result); 
+        setLoginError(result);
       }
     } catch (error) {
       setLoginError("There was an error during login.");
@@ -39,24 +42,26 @@ const AuthPage = ({ showModal, setShowModal }) => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-
+  
     if (isSubmitting) return;
-
-    setIsSubmitting(true)
-
-    const convertImageToBase64 = (file) => {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = (error) => reject(error);
-        reader.readAsDataURL(file);
-      });
-    };
-
+  
+    setIsSubmitting(true);
+  
     try {
-      const base64Image = img_profile ? await fetch(img_profile)
-        .then(response => response.blob())
-        .then(blob => convertImageToBase64(blob)) : "";
+      let downloadURL = "";
+  
+      if (img_profile) {
+        const response = await fetch(img_profile);
+        const blob = await response.blob();
+        const fileName = img_profile.split("/").pop();
+
+        const storage = getStorage();
+        const fileRef = ref(storage, `user-profile-images/${fileName}`);
+        await uploadBytes(fileRef, blob);
+  
+        downloadURL = await getDownloadURL(fileRef);
+        console.log("Profile image URL:", downloadURL);
+      }
 
       const userData = new userRes(
         null,
@@ -66,22 +71,21 @@ const AuthPage = ({ showModal, setShowModal }) => {
         address,
         email,
         password,
-        base64Image
+        downloadURL 
       );
-
+  
       const response = await RegisterUsers(userData);
       console.log("User registered successfully:", response);
-
+  
       alert("สมัครสมาชิกสำเร็จ!");
       setShowModal(false);
-
     } catch (error) {
       setRegistrationError("There was an error during registration.");
-      console.error(error);
+      console.error("Error during registration:", error);
     } finally {
       setIsSubmitting(false);
     }
-  };
+  };  
 
   const handleProfilePictureChange = (e) => {
     const file = e.target.files[0];
