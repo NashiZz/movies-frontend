@@ -24,7 +24,9 @@ let analytics;
 if (typeof window !== "undefined" && isSupported()) {
   analytics = getAnalytics(app);
 }
-export { analytics };
+console.log("Firebase App initialized:", app);
 
 const storage = getStorage(app); 
-export { storage };
+console.log("Firebase Storage initialized:", storage);
+
+export { app, storage,  analytics  };
