@@ -20,6 +20,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getAllGenres, searchGenreByName } from "../../service/genreService";
 import { getMoviesByGenre, searchMovieByName, searchMovies } from "../../service/movieService";
 import AuthPage from "../Pages/Login_Page/AuthPage";
+import { getUserData, removeUserData } from "../Pages/User_Page/storageHelper";
 
 function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -40,7 +41,13 @@ function Header() {
   const profileMenuRef = useRef(null);
   const navigate = useNavigate();
 
-  // Check Header
+  // useEffect(() => {
+  //   const storedUser = getUserData();
+  //   if (storedUser) {
+  //     setUserProfile(storedUser);
+  //   }
+  // }, []);
+
   useEffect(() => {
     const handleScroll = throttle(() => {
       setIsScrolled(window.scrollY > 50);
@@ -52,7 +59,6 @@ function Header() {
     };
   }, []);
 
-  // LoadData Genre
   useEffect(() => {
     const fetchGenres = async () => {
       try {
@@ -67,14 +73,12 @@ function Header() {
     fetchGenres();
   }, []);
 
-  // ResponUI 
   useEffect(() => {
     const handleResize = () => setIsMobileMenuOpen(window.innerWidth <= 768 ? false : isMobileMenuOpen);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [isMobileMenuOpen]);
 
-  // Search
   const debouncedSearch = useCallback(
     debounce(async (query) => {
       if (!query.trim()) {
@@ -122,33 +126,32 @@ function Header() {
     }
   };
 
-  // Show Login
-  const handleModalOpen = () => {
-    setShowLoginModal(true);
-  };
+  // const handleModalOpen = () => {
+  //   setShowLoginModal(true);
+  // };
 
-  const handleLogout = () => {
-    console.log("Logged out");
-    setUserProfile(null); 
-    navigate("/");
-  };
+  // const handleLogout = () => {
+  //   removeUserData();
+  //   setUserProfile(null);
+  //   navigate("/");
+  // };
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
-        setProfileMenuOpen(false);
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (event) => {
+  //     if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+  //       setProfileMenuOpen(false);
+  //     }
+  //   };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  //   };
+  // }, []);
 
-  const handleProfileClick = () => {
-    setProfileMenuOpen((prev) => !prev);
-  };
+  // const handleProfileClick = () => {
+  //   setProfileMenuOpen((prev) => !prev);
+  // };
 
   return (
     <>
@@ -175,7 +178,7 @@ function Header() {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 md:hidden ">
+          <div className="flex items-center space-x-2 md:hidden">
             {isSearchActive ? (
               <form onSubmit={handleSearchSubmit} className="flex items-center space-x-2">
                 <button
@@ -276,7 +279,7 @@ function Header() {
                 </button>
               )}
             </div>
-            {userProfile?.img_profile ? (
+            {/* {userProfile?.img_profile ? (
               <div className="relative" ref={profileMenuRef}>
                 <img
                   src={userProfile.img_profile}
@@ -288,19 +291,28 @@ function Header() {
                   <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg rounded-md">
                     <button
                       className="block w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
-                      onClick={() => navigate("/user-info")}
+                      onClick={() => {
+                        navigate("/user/profile");
+                        setProfileMenuOpen(false);  
+                      }}
                     >
                       ข้อมูลผู้ใช้
                     </button>
                     <button
                       className="block w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
-                      onClick={() => navigate("/favorites")}
+                      onClick={() => {
+                        navigate("/favorites");
+                        setProfileMenuOpen(false);  
+                      }}
                     >
                       ภาพยนต์ที่ถูกใจ
                     </button>
                     <button
                       className="block w-full px-4 py-2 text-left text-red-600 hover:bg-red-100"
-                      onClick={handleLogout}
+                      onClick={() => {
+                        handleLogout();
+                        setProfileMenuOpen(false); 
+                      }}
                     >
                       ล๊อคเอาท์
                     </button>
@@ -314,7 +326,7 @@ function Header() {
               >
                 <FontAwesomeIcon icon={faUser} className="h-6 w-6" />
               </button>
-            )}
+            )} */}
           </div>
         </div>
         <div>
@@ -365,7 +377,7 @@ function Header() {
                     </button>
                     {dropdownOpen === "genres" && (
                       <ul className="bg-white shadow-lg rounded-md mt-2 z-10 w-full max-h-96 overflow-y-auto p-2 space-y-1 border border-gray-200">
-                        {loading ? (
+                        {loadingGenres ? (
                           <li className="px-4 py-2 text-gray-500">กำลังโหลด...</li>
                         ) : error ? (
                           <li className="px-4 py-2 text-red-500">{error}</li>
@@ -393,12 +405,12 @@ function Header() {
                   </div>
                 </li>
               </ul>
-              <button
+              {/* <button
                 onClick={handleModalOpen}
                 className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white font-semibold hover:shadow-xl hover:brightness-110 focus:outline-none focus:ring-4 focus:ring-purple-300 focus:ring-opacity-50 rounded-full py-3 px-8 transition duration-300 ease-in-out transform hover:scale-105 shadow-md"
               >
                 เข้าสู่ระบบ
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
@@ -437,6 +449,7 @@ function Header() {
                       : `/movies/genres/${item.name}`
                   }
                   className="block text-gray-700 hover:bg-gray-100 p-2 rounded-md"
+                  onClick={handleSearchToggle}
                 >
                   <FontAwesomeIcon
                     icon={item.idmovie ? faFilm : faTags}

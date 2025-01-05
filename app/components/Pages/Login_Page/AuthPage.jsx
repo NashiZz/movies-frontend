@@ -1,6 +1,6 @@
 import { userRes } from "@/app/models/Users/userRes";
 import { getUserProfile, loginUser, RegisterUsers } from "@/app/service/userService";
-import { getDownloadURL, getStorage, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import React, { useState } from "react";
 
 const AuthPage = ({ showModal, setShowModal, onLoginSuccess }) => {
@@ -24,41 +24,49 @@ const AuthPage = ({ showModal, setShowModal, onLoginSuccess }) => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setLoginError("");
     try {
       const result = await loginUser(emailOrUsername, password);
-      if (result === "Login successful!") {
-        let profile = await getUserProfile(emailOrUsername);
+
+      if (result && result.token && result.user) {
+        localStorage.setItem("token", result.token);
+        const profile = await getUserProfile(emailOrUsername);
+        localStorage.setItem("user", JSON.stringify(profile));
+
         onLoginSuccess(profile);
-        alert("ล๊อคอินเข้าสู่ระบบสำเร็จ!");
+
+        alert("ล็อคอินสำเร็จ!");
         setShowModal(false);
       } else {
-        setLoginError(result);
+        setLoginError("Invalid login credentials. Please try again.");
       }
     } catch (error) {
-      setLoginError("There was an error during login.");
+      setLoginError("An error occurred while logging in. Please try again.");
       console.error(error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
-  
+
     if (isSubmitting) return;
-  
+
     setIsSubmitting(true);
-  
+
     try {
       let downloadURL = "";
-  
+
       if (img_profile) {
         const response = await fetch(img_profile);
         const blob = await response.blob();
         const fileName = img_profile.split("/").pop();
 
-        const storage = getStorage();
         const fileRef = ref(storage, `user-profile-images/${fileName}`);
         await uploadBytes(fileRef, blob);
-  
+
         downloadURL = await getDownloadURL(fileRef);
         console.log("Profile image URL:", downloadURL);
       }
@@ -71,12 +79,12 @@ const AuthPage = ({ showModal, setShowModal, onLoginSuccess }) => {
         address,
         email,
         password,
-        downloadURL 
+        downloadURL
       );
-  
+
       const response = await RegisterUsers(userData);
       console.log("User registered successfully:", response);
-  
+
       alert("สมัครสมาชิกสำเร็จ!");
       setShowModal(false);
     } catch (error) {
@@ -85,7 +93,7 @@ const AuthPage = ({ showModal, setShowModal, onLoginSuccess }) => {
     } finally {
       setIsSubmitting(false);
     }
-  };  
+  };
 
   const handleProfilePictureChange = (e) => {
     const file = e.target.files[0];
